@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
 
-const Filter = ({ newFilter, handleFilterChange }) => {
+const Filter = ({ newFilter, handleFilterChange, changeFilter }) => {
   return(
     <div>
-        <form onSubmit={(event) => {event.preventDefault()}}>
+        <form onSubmit={changeFilter}>
           <div>
             filter shown with <input
                                 value={newFilter}
@@ -48,17 +49,20 @@ const Persons = ({ filteredPersons }) => {
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 0 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 1 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 2 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 3 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
-  const [filteredPersons, setFilteredPersons] = useState([])
+  const [filteredPersons, setFilteredPersons] = useState(persons)
 
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(response.data)
+        setFilteredPersons(response.data)
+      })
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -90,12 +94,12 @@ const App = () => {
 
   const handleNameChange = (event) => setNewName(event.target.value)
   const handleNumberChange = (event) => setNewNumber(event.target.value)
-  const handleFilterChange = (event) => {setNewFilter(event.target.value); changeFilter(event)}
+  const handleFilterChange = (event) => setNewFilter(event.target.value)
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
+      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} changeFilter={changeFilter}/>
       <h2>Add</h2>
       <PersonForm 
         addPerson={addPerson} 
